@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/skillexchange
+    username: admin
+    password: admin
+
+  jpa:
+    hibernate:
+      ddl-auto: update          # Liquibase owns the schema
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      hibernate.format_sql: true
+
+  liquibase:
+    user: admin
+    password: admin
+    change-log: classpath:db/changelog/changelog-master.yaml
+    enabled: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+app:
+  jwt:
+    secret-base64: U7/A5+QHKqCFAEECjKa3wK3cpMZb2fBPaaeE20PSpO4=
