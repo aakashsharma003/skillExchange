@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@org.springframework.web.bind.annotation.RequestMapping("/chat")
 public class ChatController implements ChatApi {
 
     private final ChatService chatService;
@@ -46,13 +47,13 @@ public class ChatController implements ChatApi {
 
     // ----- Aliases to match client expectations -----
 
-    @GetMapping("/chat/rooms/{userId}")
+    @GetMapping("/rooms/{userId}")
     public ResponseEntity<?> aliasUserRooms(@PathVariable String userId,
                                             @RequestHeader("Authorization") String tokenHeader) {
         return getUserChatRooms(userId, tokenHeader);
     }
 
-    @GetMapping("/chat/rooms/{chatRoomId}/messages")
+    @GetMapping("/rooms/{chatRoomId}/messages")
     public ResponseEntity<?> aliasRoomMessages(@PathVariable String chatRoomId) {
         return getChatMessages(chatRoomId);
     }

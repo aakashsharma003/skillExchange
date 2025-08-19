@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
+@org.springframework.web.bind.annotation.RequestMapping("/skill-swap")
 public class SkillExchangeController implements SkillExchangeApi {
 
     private final AuthService authService;
@@ -126,7 +127,7 @@ public class SkillExchangeController implements SkillExchangeApi {
     }
 
     // Alias to match client route: /skill-swap/sent-request
-    @org.springframework.web.bind.annotation.GetMapping("/skill-swap/sent-request")
+    @org.springframework.web.bind.annotation.GetMapping("/sent-request")
     public ResponseEntity<?> aliasSentRequests(@org.springframework.web.bind.annotation.RequestHeader("Authorization") String tokenHeader) {
         return getAllSentRequest(tokenHeader);
     }
