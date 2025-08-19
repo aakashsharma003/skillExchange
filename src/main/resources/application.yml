@@ -6,16 +6,15 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate          # Liquibase owns the schema
+      ddl-auto: none          # Liquibase owns the schema
     open-in-view: false
     properties:
       hibernate.jdbc.time_zone: UTC
       hibernate.format_sql: true
       hibernate.default_schema: skillexchange
+    defer-datasource-initialization: true
 
   liquibase:
-    user: admin
-    password: admin
     change-log: classpath:db/changelog/changelog-master.yaml
     enabled: true
 
