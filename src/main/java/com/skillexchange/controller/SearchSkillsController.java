@@ -35,13 +35,7 @@ public class SearchSkillsController implements SearchSkillsApi {
                                  .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
         }
 
-        String token = tokenHeader.substring(7);
-        if (!jwtService.validateTokenWithEmail(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                 .body(new ApiResponse<>(false, "Invalid token", null));
-        }
-
-        String email = jwtService.extractEmail(token);
+        String email = jwtService.extractEmail(tokenHeader);
 
         List<UserDetails> users = (skill != null && !skill.isBlank())
                                   ? skillsSearchService.findBySkillsContaining(skill, email)

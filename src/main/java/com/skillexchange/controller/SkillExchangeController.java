@@ -72,16 +72,7 @@ public class SkillExchangeController implements SkillExchangeApi {
 
     public ResponseEntity<?> getAllRequest(String tokenHeader) {
         try {
-            if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                     .body(new ApiResponse<>(false, "Missing token", null));
-            }
-            String token = tokenHeader.substring(7);
-            if (!jwtService.validateTokenWithEmail(token)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                     .body(new ApiResponse<>(false, "Invalid token", null));
-            }
-            String email = jwtService.extractEmail(token);
+            String email = jwtService.extractEmail(tokenHeader);
             Optional<UserDetails> userOpt = authService.findByEmailIgnoreCase(email);
             if (userOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -111,16 +102,7 @@ public class SkillExchangeController implements SkillExchangeApi {
 
     public ResponseEntity<?> getAllSentRequest(String tokenHeader) {
         try {
-            if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                     .body(new ApiResponse<>(false, "Missing token", null));
-            }
-            String token = tokenHeader.substring(7);
-            if (!jwtService.validateTokenWithEmail(token)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                     .body(new ApiResponse<>(false, "Invalid token", null));
-            }
-            String email = jwtService.extractEmail(token);
+            String email = jwtService.extractEmail(tokenHeader);
             Optional<UserDetails> userDetailsOpt = authService.findByEmailIgnoreCase(email);
             if (userDetailsOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -145,16 +127,7 @@ public class SkillExchangeController implements SkillExchangeApi {
 
     public ResponseEntity<?> getAllReceivedRequest(String tokenHeader) {
         try {
-            if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                     .body(new ApiResponse<>(false, "Missing token", null));
-            }
-            String token = tokenHeader.substring(7);
-            if (!jwtService.validateTokenWithEmail(token)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                     .body(new ApiResponse<>(false, "Invalid token", null));
-            }
-            String email = jwtService.extractEmail(token);
+            String email = jwtService.extractEmail(tokenHeader);
             Optional<UserDetails> userDetailsOpt = authService.findByEmailIgnoreCase(email);
             if (userDetailsOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
