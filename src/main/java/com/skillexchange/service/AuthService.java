@@ -6,6 +6,7 @@ import com.skillexchange.model.UserDetails;
 import com.skillexchange.model.dto.LoginDTO;
 import com.skillexchange.service.JwtService;
 import com.skillexchange.repository.AuthRepository;
+import com.skillexchange.repository.OtpRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,20 +24,20 @@ public class AuthService {
 
     private final AuthRepository authRepo;
     private final EmailService emailService;
+    private final OtpRepository otpRepository;
     private final JwtService jwtService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // In-memory OTP store: email(lowercased) -> OTP details
-    private final Map<String, OtpDetails> otpStore = new HashMap<>();
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final long OTP_TTL_MILLIS = 5 * 60 * 1000L; // 5 minutes
 
-    public AuthService(AuthRepository authRepo, EmailService emailService, JwtService jwtService) {
+    public AuthService(AuthRepository authRepo, EmailService emailService, JwtService jwtService, OtpRepository otpRepository) {
         this.authRepo = authRepo;
         this.emailService = emailService;
         this.jwtService = jwtService;
+        this.otpRepository = otpRepository;
     }
 
     public ResponseEntity<?> signupToOtp(UserDetails signupRequest) {
@@ -61,9 +62,14 @@ public class AuthService {
 
         int otp = 100_000 + RANDOM.nextInt(900_000); // 6-digit OTP
 
-        // Save OTP with normalized key
-        String key = email.toLowerCase();
-        otpStore.put(key, new OtpDetails(otp, System.currentTimeMillis()));
+        // Persist OTP
+        OtpDetails details = new OtpDetails(
+            java.util.UUID.randomUUID(),
+            email.toLowerCase(),
+            otp,
+            java.time.Instant.now()
+        );
+        otpRepository.save(details);
 
         // Send OTP via email
         emailService.sendEmail(email, "Your OTP Code", "Your OTP is: " + otp);
@@ -99,15 +105,15 @@ public class AuthService {
         }
 
         String emailKey = signupRequest.getEmail().toLowerCase();
-        OtpDetails otpDetails = otpStore.get(emailKey);
+        OtpDetails otpDetails = otpRepository.findTopByEmailOrderByCreatedAtDesc(emailKey).orElse(null);
 
         if (otpDetails == null) {
             return ResponseEntity.ok(new ApiResponse<>(false, "Otp Is Null", null));
         }
 
         long now = System.currentTimeMillis();
-        if (now - otpDetails.getTimestamp() > OTP_TTL_MILLIS) { // expired
-            otpStore.remove(emailKey);
+        if (now - otpDetails.getCreatedAt().toEpochMilli() > OTP_TTL_MILLIS) { // expired
+            otpRepository.deleteByEmail(emailKey);
             return ResponseEntity.ok(new ApiResponse<>(false, "Otp Expire", null));
         }
 
@@ -115,8 +121,8 @@ public class AuthService {
             return ResponseEntity.ok(new ApiResponse<>(false, "Otp Is Invalid", null));
         }
 
-        // OTP verified – remove only this email's entry
-        otpStore.remove(emailKey);
+        // OTP verified – cleanup any stored OTPs for this email
+        otpRepository.deleteByEmail(emailKey);
 
         // Basic required fields check
         if (!checkForEmptyField(signupRequest)) {

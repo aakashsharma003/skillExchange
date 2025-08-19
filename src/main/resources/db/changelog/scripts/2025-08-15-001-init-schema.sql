@@ -57,6 +57,14 @@ CREATE TABLE IF NOT EXISTS skillexchange.exchange_requests (
     CONSTRAINT fk_exchange_receiver FOREIGN KEY (receiver_id) REFERENCES skillexchange.users(id)
 );
 
+-- OTP table
+CREATE TABLE IF NOT EXISTS skillexchange.otp_details (
+    id UUID PRIMARY KEY,
+    email VARCHAR(150) NOT NULL,
+    otp INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 -- Users
 CREATE INDEX IF NOT EXISTS idx_users_email_lower ON skillexchange.users (LOWER(email));
