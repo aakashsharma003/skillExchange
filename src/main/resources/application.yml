@@ -17,6 +17,11 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/changelog-master.yaml
     enabled: true
+    url: jdbc:postgresql://localhost:5432/skillexchange
+    user: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+    default-schema: skillexchange
 
 springdoc:
   api-docs:
