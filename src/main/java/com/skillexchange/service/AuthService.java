@@ -55,6 +55,7 @@ public class AuthService {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> generateOtp(String email) {
         if (isBlank(email)) {
             return ResponseEntity.ok(new ApiResponse<>(false, "Email is required", null));
@@ -99,6 +100,7 @@ public class AuthService {
         return ResponseEntity.ok(new ApiResponse<>(true, "Signup Successfully", null));
     }
 
+    @Transactional
     public ResponseEntity<?> verifyOtp(int enteredOtp, UserDetails signupRequest) {
         if (signupRequest == null || isBlank(signupRequest.getEmail())) {
             return ResponseEntity.ok(new ApiResponse<>(false, "Email is required", null));
