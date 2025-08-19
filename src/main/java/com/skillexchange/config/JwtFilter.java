@@ -32,18 +32,22 @@ public class JwtFilter extends OncePerRequestFilter {
         String email = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            JwtService jwtService = applicationContext.getBean(JwtService.class);
-            email = jwtService.extractEmail(token);
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetailsService userDetailsService = applicationContext.getBean(UserDetailsService.class);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                if (jwtService.validateTokenWithEmail(token)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                token = authHeader.substring(7);
+                JwtService jwtService = applicationContext.getBean(JwtService.class);
+                email = jwtService.extractEmail(token);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetailsService userDetailsService = applicationContext.getBean(UserDetailsService.class);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    if (jwtService.validateTokenWithEmail(token)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
+            } catch (Exception ex) {
+                // ignore invalid/expired tokens to allow public endpoints
             }
         }
 
