@@ -19,6 +19,15 @@ spring:
     change-log: classpath:db/changelog/changelog-master.yaml
     enabled: true
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operationsSorter: method
+    displayRequestDuration: true
+
   mail:
     host: smtp.gmail.com
     port: 587
