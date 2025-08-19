@@ -32,6 +32,15 @@ springdoc:
     operationsSorter: method
     displayRequestDuration: true
 
+app:
+  cors:
+    # Comma-separated. Replace with your frontends, e.g. https://app.example.com,http://localhost:3000
+    allowed-origins: "*"
+    allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+    allowed-headers: Authorization,Content-Type,Accept,Origin,X-Requested-With
+    exposed-headers: Authorization,Content-Type
+    allow-credentials: true
+
   mail:
     host: smtp.gmail.com
     port: 587
