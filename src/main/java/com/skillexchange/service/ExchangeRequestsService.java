@@ -3,6 +3,7 @@ package com.skillexchange.service;
 import com.skillexchange.model.request.ExchangeRequest;
 import com.skillexchange.repository.ExchangeRequestRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,6 +18,7 @@ public class ExchangeRequestsService {
     }
 
     // create / update
+    @Transactional
     public ExchangeRequest saveExchangeRequest(ExchangeRequest request) {
         return exchangeRequestRepository.save(request);
     }

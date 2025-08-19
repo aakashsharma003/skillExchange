@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "chat_rooms")
+@Table(name = "chat_rooms", schema = "skillexchange")
 @NoArgsConstructor
 public class ChatRoom {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "sender_id", nullable = false)

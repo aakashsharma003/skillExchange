@@ -14,12 +14,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "chat_messages")
+@Table(name = "chat_messages", schema = "skillexchange")
 @NoArgsConstructor
 @Data
 public class ChatMessage {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "chat_room_id", nullable = false)
@@ -37,7 +37,7 @@ public class ChatMessage {
     private String content;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     // Optionally, add a constructor for convenience
     public ChatMessage(UUID chatRoomId, String senderEmail, String content, LocalDateTime createdAt) {

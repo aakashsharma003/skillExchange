@@ -6,11 +6,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update          # Liquibase owns the schema
+      ddl-auto: validate          # Liquibase owns the schema
     open-in-view: false
     properties:
       hibernate.jdbc.time_zone: UTC
       hibernate.format_sql: true
+      hibernate.default_schema: skillexchange
 
   liquibase:
     user: admin

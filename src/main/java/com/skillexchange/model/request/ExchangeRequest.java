@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import java.util.UUID;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 public class ExchangeRequest {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -27,9 +30,6 @@ public class ExchangeRequest {
 
     @Column(name = "offered_skill")
     private String offeredSkill;
-
-    @Column(name = "message")
-    private String message;
 
     @Column(name = "status", nullable = false)
     private String status = "Pending";

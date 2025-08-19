@@ -1,7 +1,6 @@
 package com.skillexchange.model;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -17,7 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Table(name = "users")
+@Table(name = "users", schema = "skillexchange")
 @Entity
 @Getter
 @Setter
@@ -41,8 +42,9 @@ public class UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "skills")
-    private List<String> skills;
+    @Column(name = "skills", columnDefinition = "text[]")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private String[] skills;
 
     @Column(name = "github_profile", length = 200)
     private String githubProfile;

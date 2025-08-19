@@ -54,7 +54,7 @@ public class UserController implements UserApi {
         UserDetails user = userOpt.get();
         // Efficiently update only changed fields
         if (updatedUser.getName() != null) user.setName(updatedUser.getName());
-        if (updatedUser.getSkills() != null) user.setSkills(updatedUser.getSkills());
+        if (updatedUser.getSkills() != null) user.setSkills(updatedUser.getSkills().toArray(new String[0]));
         if (updatedUser.getBio() != null) user.setBio(updatedUser.getBio());
         // Add more fields as needed
         UserDetails updated = authService.updateUserProfile(user);
@@ -74,7 +74,7 @@ public class UserController implements UserApi {
         UserDetails user = userOpt.get();
         // Efficiently update only changed fields
         if (updatedUser.getName() != null) user.setName(updatedUser.getName());
-        if (updatedUser.getSkills() != null) user.setSkills(updatedUser.getSkills());
+        if (updatedUser.getSkills() != null) user.setSkills(updatedUser.getSkills().toArray(new String[0]));
         if (updatedUser.getBio() != null) user.setBio(updatedUser.getBio());
         // Add more fields as needed
         UserDetails updated = authService.updateUserProfile(user);

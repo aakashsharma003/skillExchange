@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -70,6 +71,7 @@ public class AuthService {
         return ResponseEntity.ok(new ApiResponse<>(true, "Otp Sent Successfully", null));
     }
 
+    @Transactional
     public ResponseEntity<?> signup(UserDetails signupRequest) {
         String hash = passwordEncoder.encode(signupRequest.getPassword());
 
@@ -132,7 +134,7 @@ public class AuthService {
                && !isBlank(signUpRequest.getPassword())
                && !isBlank(signUpRequest.getName())
                && signUpRequest.getSkills() != null
-               && !signUpRequest.getSkills().isEmpty();
+               && signUpRequest.getSkills().length > 0;
     }
 
     public ResponseEntity<?> login(LoginDTO loginDto) {
@@ -164,6 +166,7 @@ public class AuthService {
         return authRepo.findByEmailIgnoreCase(email);
     }
 
+    @Transactional
     public UserDetails updateUserProfile(UserDetails user) {
         if (user == null || user.getEmail() == null) return null;
         return authRepo.save(user);

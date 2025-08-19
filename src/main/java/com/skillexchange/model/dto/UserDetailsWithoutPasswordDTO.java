@@ -1,6 +1,5 @@
 package com.skillexchange.model.dto;
 
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-@Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDetailsWithoutPasswordDTO {

@@ -10,11 +10,12 @@ import com.skillexchange.service.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import com.skillexchange.api.SkillExchangeApi;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
-public class SkillExchangeController {
+public class SkillExchangeController implements SkillExchangeApi {
 
     private final AuthService authService;
     private final ExchangeRequestsService exchangeRequestsService;
@@ -42,7 +43,12 @@ public class SkillExchangeController {
                                      .body(new ApiResponse<>(false, "Invalid token", null));
             }
             String senderEmail = jwtService.extractEmail(token);
-            exchangeRequest.setSenderId(null); // senderId should be UUID, not email
+            Optional<UserDetails> senderOpt = authService.findByEmailIgnoreCase(senderEmail);
+            if (senderOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                     .body(new ApiResponse<>(false, "User not found", null));
+            }
+            exchangeRequest.setSenderId(senderOpt.get().getId());
             Optional<ExchangeRequest> existingRequest = exchangeRequestsService.findBySenderReceiverAndSkill(
                 exchangeRequest.getSenderId(),
                 exchangeRequest.getReceiverId(),
