@@ -22,36 +22,36 @@ SkillExchange is a web application built with Spring Boot that enables users to 
 ## Getting Started
 
 ### Prerequisites
-- Java 17 or higher
-- PostgreSQL
-- Gradle
-- Docker (optional)
+- Java 17+ (auto-provisioned by Gradle toolchains)
+- Docker (for local Postgres)
+- Optional: Local PostgreSQL if you don't use Docker
 
-### Setup Instructions
+### Setup Instructions (Local with Docker Postgres)
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
    cd skillexchange
    ```
-2. **Configure the database:**
-   - Edit `src/main/resources/application.yml` with your PostgreSQL credentials.
-   - Ensure the database `skillexchange` exists, or create it.
-3. **Run database migrations:**
-   - Liquibase will apply migrations automatically on application startup.
-   - Alternatively, run SQL scripts in `src/main/resources/db/changelog/scripts/` manually if needed.
-4. **Build and run the application:**
+2. **Start PostgreSQL:**
    ```bash
-   ./gradlew build
+   docker compose up -d postgres
+   ```
+   - This starts Postgres 16 with DB `skillexchange` and user/password `admin/admin` (see `docker-compose.yml`).
+3. **Configure app (optional):**
+   - Defaults in `src/main/resources/application.yml` point to `jdbc:postgresql://localhost:5432/skillexchange` with `admin/admin` and Liquibase enabled.
+   - JPA is set to `ddl-auto=validate`. Liquibase owns the schema.
+4. **Run the app:**
+   ```bash
    ./gradlew bootRun
    ```
-5. **Access the application:**
-   - The API will be available at `http://localhost:8080/`
+   - First run will auto-download a JDK 17 via Gradle toolchains if needed.
+5. **Access the API:**
+   - Swagger UI: http://localhost:8080/swagger-ui.html
+   - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 ### Docker Setup
-- To run the application and database using Docker Compose:
-  ```bash
-  docker-compose up --build
-  ```
+- To run only the database using Docker Compose (recommended): see above.
+- If you containerize the app as well, add a service in `docker-compose.yml` that depends on `postgres` and exports port 8080.
 
 ## Project Structure
 - `src/main/java/com/skillexchange/` - Main application code
@@ -59,20 +59,34 @@ SkillExchange is a web application built with Spring Boot that enables users to 
 - `build.gradle` - Build configuration
 - `docker-compose.yml` - Container orchestration
 
-## API Endpoints
-- User management: `/api/user/*`
-- Skill search: `/api/search-skills/*`
-- Skill exchange: `/api/skill-exchange/*`
-- Chat: `/api/chat/*`
+## API Endpoints (high level)
+- Auth: `/auth/**` (signup-to-otp, verifyOtp, login)
+- User: per `UserApi`
+- Search skills: per `SearchSkillsApi`
+- Skill exchange: per `SkillExchangeApi`
+- Chat: WebSocket STOMP under `/ws-chat`
+
+See Swagger UI for the full contract.
 
 ## Database Schema
-- See `src/main/resources/db/changelog/scripts/2025-08-15-001-init-schema.sql` for table definitions.
+- Managed by Liquibase. Master changelog: `src/main/resources/db/changelog/changelog-master.yaml`.
+- Initial DDL: `src/main/resources/db/changelog/scripts/2025-08-15-001-init-schema.sql`.
+- JPA validation: `spring.jpa.hibernate.ddl-auto=validate` prevents schema drift.
+
+### Postgres specifics
+- `users.skills` is a `TEXT[]` array (indexed via GIN). Queries use `ANY(skills)`.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 This project is licensed under the MIT License.
+
+## Security
+- Stateless Spring Security with a JWT filter authenticates requests:
+  - `Authorization: Bearer <token>` header is parsed by a `OncePerRequestFilter`.
+  - On success, the user is set in `SecurityContext` and protected endpoints require authentication.
+- You can inject the authenticated principal via Spring Security if needed.
 
 ## Contact
 For questions or support, contact the maintainer at [as861949578@gmail.com].
