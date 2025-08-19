@@ -57,5 +57,17 @@ public class ChatController implements ChatApi {
     public ResponseEntity<?> aliasRoomMessages(@PathVariable String chatRoomId) {
         return getChatMessages(chatRoomId);
     }
+
+    // Some clients may POST to fetch data; support POST aliases that delegate to the same handlers
+    @org.springframework.web.bind.annotation.PostMapping("/rooms/{userId}")
+    public ResponseEntity<?> aliasUserRoomsPost(@PathVariable String userId,
+                                                @RequestHeader("Authorization") String tokenHeader) {
+        return getUserChatRooms(userId, tokenHeader);
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/rooms/{chatRoomId}/messages")
+    public ResponseEntity<?> aliasRoomMessagesPost(@PathVariable String chatRoomId) {
+        return getChatMessages(chatRoomId);
+    }
 }
 

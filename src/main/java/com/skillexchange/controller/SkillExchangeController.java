@@ -127,7 +127,11 @@ public class SkillExchangeController implements SkillExchangeApi {
     }
 
     // Alias to match client route: /skill-swap/sent-request
-    @org.springframework.web.bind.annotation.GetMapping("/sent-request")
+    @org.springframework.web.bind.annotation.RequestMapping(
+        value = "/sent-request",
+        method = {org.springframework.web.bind.annotation.RequestMethod.GET,
+                  org.springframework.web.bind.annotation.RequestMethod.POST}
+    )
     public ResponseEntity<?> aliasSentRequests(@org.springframework.web.bind.annotation.RequestHeader("Authorization") String tokenHeader) {
         return getAllSentRequest(tokenHeader);
     }
