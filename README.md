@@ -23,7 +23,7 @@ src/main/java/com/skillexchange/
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 * **Backend Framework:** Spring Boot 3.x
 * **Database:** MongoDB (NoSQL)
@@ -33,9 +33,9 @@ src/main/java/com/skillexchange/
 
 ---
 
-## ⚙️ Setup & Installation
+## Setup & Installation
 
-### 1️⃣ Prerequisites
+### Prerequisites
 
 * JDK **17 or higher**
 * MongoDB (Local instance or MongoDB Atlas URI)
@@ -43,7 +43,7 @@ src/main/java/com/skillexchange/
 
 ---
 
-### 2️⃣ Environment Variables
+### Environment Variables
 
 To keep your credentials secure, configure the following environment variables in your system or IDE:
 
@@ -56,7 +56,7 @@ To keep your credentials secure, configure the following environment variables i
 
 ---
 
-### 3️⃣ Running the Application
+### Running the Application
 
 ```bash
 # Clone the repository
@@ -71,7 +71,7 @@ mvn spring-boot:run
 
 ---
 
-## 📖 API Documentation
+##  API Documentation
 
 Once the application is running on `localhost:8080`, access the interactive API documentation:
 
@@ -83,7 +83,7 @@ Once the application is running on `localhost:8080`, access the interactive API 
 
 ---
 
-## 🛡️ Key Features
+## Key Features
 
 * **Secure Authentication**
   JWT-based stateless authentication with **60-minute expiration**
