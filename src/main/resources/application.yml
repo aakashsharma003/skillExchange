@@ -4,7 +4,7 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/skillexchange}
+      uri: ${MONGODB_URI}
       auto-index-creation: true
 
   mail:
