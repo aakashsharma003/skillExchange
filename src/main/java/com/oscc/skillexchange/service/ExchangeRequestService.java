@@ -1,5 +1,7 @@
 package com.oscc.skillexchange.service;
 
+import com.oscc.skillexchange.domain.entity.ChatMessage;
+import com.oscc.skillexchange.domain.entity.ChatRoom;
 import com.oscc.skillexchange.domain.entity.ExchangeRequest;
 import com.oscc.skillexchange.domain.entity.User;
 import com.oscc.skillexchange.dto.request.ExchangeRequestDto;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +30,7 @@ public class ExchangeRequestService {
     private final ExchangeRequestRepository exchangeRequestRepository;
     private final UserService userService;
     private final EntityMapper mapper;
+    private final ChatService chatService;
 
     /**
      * Create exchange request
@@ -133,6 +137,26 @@ public class ExchangeRequestService {
             if (dto.getOfferedSkill() != null) {
                 request.setOfferedSkill(dto.getOfferedSkill());
             }
+
+            // --- Chat Start Logic ---
+            // 1. Pehle Chat Room create ya fetch karo
+            ChatRoom room = chatService.createOrGetChatRoom(
+                    request.getSenderId(),
+                    request.getReceiverId(),
+                    request.getId()
+            );
+
+            // 2. Initial message ko ChatMessage object mein convert karke save karo
+            ChatMessage firstMessage = ChatMessage.builder()
+                    .chatRoomId(room.getId())
+                    .senderId(request.getSenderId()) // Jisne request bheji thi wahi sender hai
+                    .content(request.getMessage())   // Request ka original message content
+                    .createdAt(Instant.now())
+                    .build();
+
+            chatService.saveMessage(firstMessage);
+            log.info("Chat initialized and first message sent for room: {}", room.getId());
+
         } else {
             request.setStatus(ExchangeRequest.RequestStatus.REJECTED);
         }
@@ -143,7 +167,6 @@ public class ExchangeRequestService {
         User receiver = userService.getUserById(request.getReceiverId());
 
         log.info("Exchange request updated successfully: {}", requestId);
-
         return mapper.toExchangeRequestResponse(request, sender, receiver);
     }
 
