@@ -13,7 +13,11 @@ import java.time.Instant;
 @AllArgsConstructor
 public class ChatRoomResponse {
     private String id;
+    // Convenience alias for frontend
+    private String chatRoomId;
     private UserResponse otherUser;
     private String exchangeRequestId;
+    private String offeredSkill;
+    private String requestedSkill;
     private Instant lastActivityAt;
 }

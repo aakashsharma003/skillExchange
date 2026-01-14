@@ -6,6 +6,7 @@ import com.oscc.skillexchange.dto.request.ChatRoomRequest;
 import com.oscc.skillexchange.dto.response.ApiResponse;
 import com.oscc.skillexchange.dto.response.ChatMessageResponse;
 import com.oscc.skillexchange.dto.response.ChatRoomResponse;
+import com.oscc.skillexchange.repository.ExchangeRequestRepository;
 import com.oscc.skillexchange.service.AuthService;
 import com.oscc.skillexchange.service.ChatService;
 import com.oscc.skillexchange.service.UserService;
@@ -38,6 +39,7 @@ public class ChatController {
     private final AuthService authService;
     private final UserService userService;
     private final EntityMapper mapper;
+    private final ExchangeRequestRepository exchangeRequestRepository;
 
     @Operation(summary = "Get user's chat rooms")
     @GetMapping(value = "/rooms", produces = APPLICATION_JSON_VALUE)
@@ -120,6 +122,13 @@ public class ChatController {
 
         // 4. FIX: Entity ko Response DTO mein convert karein using mapper
         ChatRoomResponse response = mapper.toChatRoomResponse(roomEntity, otherUser);
+        response.setChatRoomId(roomEntity.getId());
+        if (roomEntity.getExchangeRequestId() != null) {
+            exchangeRequestRepository.findById(roomEntity.getExchangeRequestId()).ifPresent(req -> {
+                response.setOfferedSkill(req.getOfferedSkill());
+                response.setRequestedSkill(req.getRequestedSkill());
+            });
+        }
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

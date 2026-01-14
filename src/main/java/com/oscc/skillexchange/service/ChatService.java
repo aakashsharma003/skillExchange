@@ -2,12 +2,14 @@ package com.oscc.skillexchange.service;
 
 import com.oscc.skillexchange.domain.entity.ChatMessage;
 import com.oscc.skillexchange.domain.entity.ChatRoom;
+import com.oscc.skillexchange.domain.entity.ExchangeRequest;
 import com.oscc.skillexchange.domain.entity.User;
 import com.oscc.skillexchange.dto.response.ChatMessageResponse;
 import com.oscc.skillexchange.dto.response.ChatRoomResponse;
 import com.oscc.skillexchange.exception.ResourceNotFoundException;
 import com.oscc.skillexchange.repository.ChatMessageRepository;
 import com.oscc.skillexchange.repository.ChatRoomRepository;
+import com.oscc.skillexchange.repository.ExchangeRequestRepository;
 import com.oscc.skillexchange.util.EntityMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ public class ChatService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final ExchangeRequestRepository exchangeRequestRepository;
     private final UserService userService;
     private final EntityMapper mapper;
 
@@ -75,7 +78,18 @@ public class ChatService {
                             : room.getSenderId();
 
                     User otherUser = userService.getUserById(otherUserId);
-                    return mapper.toChatRoomResponse(room, otherUser);
+                    ChatRoomResponse resp = mapper.toChatRoomResponse(room, otherUser);
+                    // Provide frontend-friendly fields
+                    resp.setChatRoomId(room.getId());
+
+                    if (room.getExchangeRequestId() != null) {
+                        exchangeRequestRepository.findById(room.getExchangeRequestId()).ifPresent(req -> {
+                            resp.setOfferedSkill(req.getOfferedSkill());
+                            resp.setRequestedSkill(req.getRequestedSkill());
+                        });
+                    }
+
+                    return resp;
                 })
                 .sorted(Comparator.comparing(ChatRoomResponse::getLastActivityAt).reversed())
                 .collect(Collectors.toList());

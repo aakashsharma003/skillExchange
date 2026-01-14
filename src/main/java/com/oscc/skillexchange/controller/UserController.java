@@ -1,7 +1,6 @@
 package com.oscc.skillexchange.controller;
 
 import com.oscc.skillexchange.domain.entity.User;
-import com.oscc.skillexchange.dto.request.SkillUpdateRequest;
 import com.oscc.skillexchange.dto.response.ApiResponse;
 import com.oscc.skillexchange.dto.response.UserResponse;
 import com.oscc.skillexchange.service.AuthService;
@@ -38,17 +37,8 @@ public class UserController {
             @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader) {
         String token = TokenUtil.extractToken(authHeader);
         User user = authService.validateTokenAndGetUser(token);
-        System.out.println("here are my details" + user.getEmail() + user.getFullName());
         User userEntity = userService.getUserById(user.getId());
-
-        UserResponse response = UserResponse.builder()
-                .id(userEntity.getId())
-                .fullName(userEntity.getFullName())
-                .email(userEntity.getEmail())
-                .skills(userEntity.getSkills())
-                .bio(userEntity.getBio())
-                .build();
-
+        UserResponse response = userService.getUserResponse(userEntity);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -70,24 +60,28 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> getUserByEmail(
             @RequestParam String email) {
         User user = userService.getUserByEmail(email);
-        UserResponse response = userService.searchUsersBySkill(null, "").stream()
-                .filter(u -> u.getEmail().equalsIgnoreCase(email))
-                .findFirst()
-                .orElse(null);
+        UserResponse response = userService.getUserResponse(user);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @Operation(summary = "Search users by skill")
+    @Operation(summary = "Search users by skillsOffered or interests")
     @GetMapping(value = "/search", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<List<UserResponse>>> searchUsers(
             @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader,
-            @RequestParam(required = false) String skill) {
+            @RequestParam(required = false) String skill,
+            @RequestParam(required = false) String interest,
+            @RequestParam(required = false, defaultValue = "skillsOffered") String searchType) {
         String token = TokenUtil.extractToken(authHeader);
-        User user = authService.validateTokenAndGetUser(token);
+        User currentUser = authService.validateTokenAndGetUser(token);
 
-        List<UserResponse> users = (skill != null && !skill.isBlank())
-                ? userService.searchUsersBySkill(skill, user.getEmail())
-                : userService.getAllUsers(user.getEmail());
+        List<UserResponse> users;
+        if (skill != null && !skill.isBlank()) {
+            users = userService.searchUsersBySkill(skill, currentUser.getEmail());
+        } else if (interest != null && !interest.isBlank()) {
+            users = userService.searchUsersByInterest(interest, currentUser.getEmail());
+        } else {
+            users = userService.getAllUsers(currentUser.getEmail());
+        }
 
         return ResponseEntity.ok(ApiResponse.success(users));
     }
@@ -97,29 +91,5 @@ public class UserController {
     public ResponseEntity<ApiResponse<List<String>>> getAllSkills() {
         List<String> skills = userService.getAllDistinctSkills();
         return ResponseEntity.ok(ApiResponse.success(skills));
-    }
-
-    @Operation(summary = "Add a skill to current user profile")
-    @PostMapping(value = "/skills", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<UserResponse>> addSkill(
-            @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader,
-            @Valid @RequestBody SkillUpdateRequest request) {
-        String token = TokenUtil.extractToken(authHeader);
-        User user = authService.validateTokenAndGetUser(token);
-
-        UserResponse response = userService.addSkill(user.getId(), request.getSkill());
-        return ResponseEntity.ok(ApiResponse.success(AppConstants.Messages.PROFILE_UPDATED, response));
-    }
-
-    @Operation(summary = "Remove a skill from current user profile")
-    @DeleteMapping(value = "/skills", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<UserResponse>> removeSkill(
-            @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader,
-            @Valid @RequestBody SkillUpdateRequest request) {
-        String token = TokenUtil.extractToken(authHeader);
-        User user = authService.validateTokenAndGetUser(token);
-
-        UserResponse response = userService.removeSkill(user.getId(), request.getSkill());
-        return ResponseEntity.ok(ApiResponse.success(AppConstants.Messages.PROFILE_UPDATED, response));
     }
 }

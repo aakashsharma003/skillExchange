@@ -56,7 +56,8 @@ public class ApiResponse<T> {
         @Size(min = 2, max = 100)
         private String fullName;
 
-        private List<String> skills;
+        private List<String> skillsOffered; // What they can teach
+        private List<String> interests; // What they want to learn
 
         @Pattern(regexp = "^[+]?[0-9]{10,20}$", message = "Invalid phone number")
         private String phone;

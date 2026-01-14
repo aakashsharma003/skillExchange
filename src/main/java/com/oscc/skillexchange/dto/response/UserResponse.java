@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -19,7 +20,9 @@ public class UserResponse {
     private String fullName;
     private String email;
     private String phone;
-    private List<String> skills;
+    private List<String> skillsOffered; // What they can teach
+    private List<String> interests; // What they want to learn
+    private Map<String, Double> learningProgress; // Skill -> Proficiency (0-100)
     private String githubProfile;
     private String linkedinProfile;
     private String youtubeProfile;

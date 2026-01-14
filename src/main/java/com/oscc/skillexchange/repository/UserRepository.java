@@ -15,13 +15,18 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     boolean existsByEmailIgnoreCase(String email);
 
-    @Query("{ 'skills': ?0, 'email': { $ne: ?1 } }")
-    List<User> findBySkillsContainingAndEmailNot(String skill, String email);
+    // Search by skillsOffered
+    @Query("{ 'skillsOffered': { $in: [?0] }, 'email': { $ne: ?1 } }")
+    List<User> findBySkillsOfferedContainingAndEmailNot(String skill, String email);
+
+    // Search by interests
+    @Query("{ 'interests': { $in: [?0] }, 'email': { $ne: ?1 } }")
+    List<User> findByInterestsContainingAndEmailNot(String interest, String email);
 
     @Query("{ 'email': { $ne: ?0 } }")
     List<User> findAllExcludingEmail(String email);
 
-    @Query(value = "{ }", fields = "{ 'skills': 1 }")
+    @Query(value = "{ }", fields = "{ 'skillsOffered': 1, 'interests': 1 }")
     List<User> findAllProjectedSkills();
 }
 

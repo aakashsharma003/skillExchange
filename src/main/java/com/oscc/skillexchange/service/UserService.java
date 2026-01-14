@@ -22,6 +22,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final EntityMapper mapper;
+    private final MatchEngine matchEngine;
+    private final NotificationService notificationService;
+
+    /**
+     * Get UserResponse from User entity
+     */
+    public UserResponse getUserResponse(User user) {
+        return mapper.toUserResponse(user);
+    }
 
     /**
      * Get user by ID
@@ -52,17 +61,57 @@ public class UserService {
         user = userRepository.save(user);
         log.info("Profile updated successfully for user: {}", userId);
 
+        // Trigger match checking after profile update
+        checkAndNotifyMatches(user);
+
         return mapper.toUserResponse(user);
     }
 
     /**
-     * Search users by skill
+     * Check for matches and send notifications
+     */
+    private void checkAndNotifyMatches(User user) {
+        try {
+            List<MatchEngine.MatchResult> matches = matchEngine.findMatches(user);
+            for (MatchEngine.MatchResult match : matches) {
+                User matchedUser = match.getUser();
+                if (!match.getMatchingSkills().isEmpty()) {
+                    String skill = match.getMatchingSkills().get(0);
+                    notificationService.sendMatchNotification(
+                            matchedUser.getId(),
+                            user.getFullName(),
+                            skill
+                    );
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error checking matches for user: {}", user.getId(), e);
+        }
+    }
+
+    /**
+     * Search users by skillsOffered (what they can teach)
      */
     public List<UserResponse> searchUsersBySkill(String skill, String excludeEmail) {
-        log.info("Searching users by skill: {}", skill);
+        log.info("Searching users by skill offered: {}", skill);
 
-        List<User> users = userRepository.findBySkillsContainingAndEmailNot(
+        List<User> users = userRepository.findBySkillsOfferedContainingAndEmailNot(
                 skill, excludeEmail.toLowerCase()
+        );
+
+        return users.stream()
+                .map(mapper::toUserResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Search users by interest (what they want to learn)
+     */
+    public List<UserResponse> searchUsersByInterest(String interest, String excludeEmail) {
+        log.info("Searching users by interest: {}", interest);
+
+        List<User> users = userRepository.findByInterestsContainingAndEmailNot(
+                interest, excludeEmail.toLowerCase()
         );
 
         return users.stream()
@@ -84,48 +133,20 @@ public class UserService {
     }
 
     /**
-     * Get all distinct skills
+     * Get all distinct skills (from skillsOffered and interests)
      */
     public List<String> getAllDistinctSkills() {
         log.info("Fetching all distinct skills");
 
         return userRepository.findAllProjectedSkills().stream()
-                .flatMap(user -> user.getSkills().stream())
+                .flatMap(user -> {
+                    List<String> all = new java.util.ArrayList<>();
+                    if (user.getSkillsOffered() != null) all.addAll(user.getSkillsOffered());
+                    if (user.getInterests() != null) all.addAll(user.getInterests());
+                    return all.stream();
+                })
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Add a skill to the user's skill list (if not already present)
-     */
-    @Transactional
-    public UserResponse addSkill(String userId, String skill) {
-        log.info("Adding skill '{}' for user: {}", skill, userId);
-
-        User user = getUserById(userId);
-        if (user.getSkills() == null) {
-            user.setSkills(List.of(skill));
-        } else if (!user.getSkills().contains(skill)) {
-            user.getSkills().add(skill);
-        }
-
-        user = userRepository.save(user);
-        return mapper.toUserResponse(user);
-    }
-
-    /**
-     * Remove a skill from the user's skill list
-     */
-    @Transactional
-    public UserResponse removeSkill(String userId, String skill) {
-        log.info("Removing skill '{}' for user: {}", skill, userId);
-
-        User user = getUserById(userId);
-        if (user.getSkills() != null && user.getSkills().removeIf(s -> s.equalsIgnoreCase(skill))) {
-            user = userRepository.save(user);
-        }
-
-        return mapper.toUserResponse(user);
     }
 }

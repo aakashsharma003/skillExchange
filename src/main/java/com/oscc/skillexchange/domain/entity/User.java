@@ -10,7 +10,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "users")
 @Data
@@ -33,7 +35,12 @@ public class User {
     private String password;
 
     @Indexed
-    private List<String> skills = new ArrayList<>();
+    private List<String> skillsOffered = new ArrayList<>(); // What they can teach
+
+    @Indexed
+    private List<String> interests = new ArrayList<>(); // What they want to learn
+
+    private Map<String, Double> learningProgress = new HashMap<>(); // Skill -> Proficiency (0-100)
 
     private String githubProfile;
     private String linkedinProfile;

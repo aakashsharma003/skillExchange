@@ -6,6 +6,7 @@ import com.oscc.skillexchange.dto.request.SignupRequest;
 import com.oscc.skillexchange.dto.response.*;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,9 @@ public class EntityMapper {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
-                .skills(user.getSkills())
+                .skillsOffered(user.getSkillsOffered())
+                .interests(user.getInterests())
+                .learningProgress(user.getLearningProgress())
                 .githubProfile(user.getGithubProfile())
                 .linkedinProfile(user.getLinkedinProfile())
                 .youtubeProfile(user.getYoutubeProfile())
@@ -40,7 +43,10 @@ public class EntityMapper {
                 .fullName(request.getFullName())
                 .email(request.getEmail().toLowerCase())
                 .phone(request.getPhone())
-                .skills(request.getSkills())
+                .skillsOffered(request.getSkillsOffered() != null && !request.getSkillsOffered().isEmpty() 
+                        ? request.getSkillsOffered() : new ArrayList<>())
+                .interests(request.getInterests() != null && !request.getInterests().isEmpty() 
+                        ? request.getInterests() : new ArrayList<>())
                 .githubProfile(request.getGithubProfile())
                 .linkedinProfile(request.getLinkedinProfile())
                 .youtubeProfile(request.getYoutubeProfile())
@@ -55,7 +61,8 @@ public class EntityMapper {
 
     public void updateUserFromDto(User user, ApiResponse.UpdateProfileRequest request) {
         if (request.getFullName() != null) user.setFullName(request.getFullName());
-        if (request.getSkills() != null) user.setSkills(request.getSkills());
+        if (request.getSkillsOffered() != null) user.setSkillsOffered(request.getSkillsOffered());
+        if (request.getInterests() != null) user.setInterests(request.getInterests());
         if (request.getPhone() != null) user.setPhone(request.getPhone());
         if (request.getGithubProfile() != null) user.setGithubProfile(request.getGithubProfile());
         if (request.getLinkedinProfile() != null) user.setLinkedinProfile(request.getLinkedinProfile());

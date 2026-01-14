@@ -29,8 +29,8 @@ public class SignupRequest {
             message = "Password must contain at least one uppercase, one lowercase, and one digit")
     private String password;
 
-    @NotEmpty(message = "At least one skill is required")
-    private List<String> skills;
+    private List<String> skillsOffered; // What they can teach
+    private List<String> interests; // What they want to learn
 
     private String githubProfile;
     private String linkedinProfile;
