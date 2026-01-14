@@ -151,7 +151,6 @@ public class AuthService {
         if (user.isLocked()) {
             throw new AccountLockedException();
         }
-        System.out.println(request.getPassword() +" "+ user.getPassword() + passwordEncoder.matches(request.getPassword(), user.getPassword()));
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException();
         }

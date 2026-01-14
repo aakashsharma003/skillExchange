@@ -78,6 +78,11 @@ public class ChatService {
                             : room.getSenderId();
 
                     User otherUser = userService.getUserById(otherUserId);
+                    if (otherUser == null) {
+                        log.warn("Other user {} not found in chat room {}", otherUserId, room.getId());
+                        return null;
+                    }
+                    
                     ChatRoomResponse resp = mapper.toChatRoomResponse(room, otherUser);
                     // Provide frontend-friendly fields
                     resp.setChatRoomId(room.getId());
@@ -91,6 +96,7 @@ public class ChatService {
 
                     return resp;
                 })
+                .filter(response -> response != null)
                 .sorted(Comparator.comparing(ChatRoomResponse::getLastActivityAt).reversed())
                 .collect(Collectors.toList());
     }
@@ -108,6 +114,19 @@ public class ChatService {
         // Set timestamp if not set
         if (message.getCreatedAt() == null) {
             message.setCreatedAt(Instant.now());
+        }
+
+        // Ensure senderId is set
+        if (message.getSenderId() == null || message.getSenderId().isBlank()) {
+            throw new IllegalArgumentException("Sender ID is required");
+        }
+
+        // Ensure receiverId is set
+        if (message.getReceiverId() == null || message.getReceiverId().isBlank()) {
+            // Set receiver based on the chat room participants
+            message.setReceiverId(
+                    message.getSenderId().equals(room.getSenderId()) ? room.getReceiverId() : room.getSenderId()
+            );
         }
 
         // Save message

@@ -33,7 +33,7 @@ public class ChatMessage {
 
     private String content;
 
-    @Indexed
     @CreatedDate
+    @Indexed
     private Instant createdAt;
 }

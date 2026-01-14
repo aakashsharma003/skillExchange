@@ -45,7 +45,7 @@ app:
 logging:
   level:
     root: INFO
-    com.skillexchange: DEBUG
+    com.oscc.skillexchange: DEBUG
     org.springframework.data.mongodb.core: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
