@@ -1,6 +1,7 @@
 package com.oscc.skillexchange.controller;
 
 import com.oscc.skillexchange.domain.entity.User;
+import com.oscc.skillexchange.dto.request.SkillUpdateRequest;
 import com.oscc.skillexchange.dto.response.ApiResponse;
 import com.oscc.skillexchange.dto.response.UserResponse;
 import com.oscc.skillexchange.service.AuthService;
@@ -96,5 +97,29 @@ public class UserController {
     public ResponseEntity<ApiResponse<List<String>>> getAllSkills() {
         List<String> skills = userService.getAllDistinctSkills();
         return ResponseEntity.ok(ApiResponse.success(skills));
+    }
+
+    @Operation(summary = "Add a skill to current user profile")
+    @PostMapping(value = "/skills", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<UserResponse>> addSkill(
+            @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader,
+            @Valid @RequestBody SkillUpdateRequest request) {
+        String token = TokenUtil.extractToken(authHeader);
+        User user = authService.validateTokenAndGetUser(token);
+
+        UserResponse response = userService.addSkill(user.getId(), request.getSkill());
+        return ResponseEntity.ok(ApiResponse.success(AppConstants.Messages.PROFILE_UPDATED, response));
+    }
+
+    @Operation(summary = "Remove a skill from current user profile")
+    @DeleteMapping(value = "/skills", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<UserResponse>> removeSkill(
+            @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader,
+            @Valid @RequestBody SkillUpdateRequest request) {
+        String token = TokenUtil.extractToken(authHeader);
+        User user = authService.validateTokenAndGetUser(token);
+
+        UserResponse response = userService.removeSkill(user.getId(), request.getSkill());
+        return ResponseEntity.ok(ApiResponse.success(AppConstants.Messages.PROFILE_UPDATED, response));
     }
 }

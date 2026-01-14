@@ -95,4 +95,37 @@ public class UserService {
                 .sorted()
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Add a skill to the user's skill list (if not already present)
+     */
+    @Transactional
+    public UserResponse addSkill(String userId, String skill) {
+        log.info("Adding skill '{}' for user: {}", skill, userId);
+
+        User user = getUserById(userId);
+        if (user.getSkills() == null) {
+            user.setSkills(List.of(skill));
+        } else if (!user.getSkills().contains(skill)) {
+            user.getSkills().add(skill);
+        }
+
+        user = userRepository.save(user);
+        return mapper.toUserResponse(user);
+    }
+
+    /**
+     * Remove a skill from the user's skill list
+     */
+    @Transactional
+    public UserResponse removeSkill(String userId, String skill) {
+        log.info("Removing skill '{}' for user: {}", skill, userId);
+
+        User user = getUserById(userId);
+        if (user.getSkills() != null && user.getSkills().removeIf(s -> s.equalsIgnoreCase(skill))) {
+            user = userRepository.save(user);
+        }
+
+        return mapper.toUserResponse(user);
+    }
 }
