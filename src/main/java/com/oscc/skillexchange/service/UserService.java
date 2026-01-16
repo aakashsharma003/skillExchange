@@ -180,4 +180,48 @@ public class UserService {
         // You can also store in a separate ActivityReport entity if needed
         // This is a simple logging approach for now
     }
+
+    /**
+     * Add a skill offered by the user
+     */
+    @Transactional
+    public UserResponse addSkillOffered(String userId, String skill) {
+        log.info("Adding skill offered for user: {} - Skill: {}", userId, skill);
+
+        User user = getUserById(userId);
+        
+        if (user.getSkillsOffered() == null) {
+            user.setSkillsOffered(new java.util.ArrayList<>());
+        }
+        
+        if (!user.getSkillsOffered().contains(skill)) {
+            user.getSkillsOffered().add(skill);
+            user = userRepository.save(user);
+        }
+        
+        log.info("Skill offered added successfully for user: {}", userId);
+        return mapper.toUserResponse(user);
+    }
+
+    /**
+     * Add an interest (skill to learn) for the user
+     */
+    @Transactional
+    public UserResponse addInterest(String userId, String interest) {
+        log.info("Adding interest for user: {} - Interest: {}", userId, interest);
+
+        User user = getUserById(userId);
+        
+        if (user.getInterests() == null) {
+            user.setInterests(new java.util.ArrayList<>());
+        }
+        
+        if (!user.getInterests().contains(interest)) {
+            user.getInterests().add(interest);
+            user = userRepository.save(user);
+        }
+        
+        log.info("Interest added successfully for user: {}", userId);
+        return mapper.toUserResponse(user);
+    }
 }
