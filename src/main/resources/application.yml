@@ -1,4 +1,10 @@
 spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
   application:
     name: skillexchange
 
@@ -33,7 +39,7 @@ server:
 
 app:
   jwt:
-    secret-base64: ${JWT_SECRET:U7/A5+QHKqCFAEECjKa3wK3cpMZb2fBPaaeE20PSpO4=}
+    secret-base64: ${JWT_SECRET}
     ttl-minutes: ${JWT_TTL_MINUTES:60}
     clock-skew-seconds: 60
   otp:

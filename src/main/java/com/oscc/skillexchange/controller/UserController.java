@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -91,5 +92,34 @@ public class UserController {
     public ResponseEntity<ApiResponse<List<String>>> getAllSkills() {
         List<String> skills = userService.getAllDistinctSkills();
         return ResponseEntity.ok(ApiResponse.success(skills));
+    }
+
+    @Operation(summary = "Delete user account")
+    @DeleteMapping(value = "/delete-account", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<String>> deleteAccount(
+            @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader) {
+        String token = TokenUtil.extractToken(authHeader);
+        User user = authService.validateTokenAndGetUser(token);
+        userService.deleteUserAccount(user.getId());
+        return ResponseEntity.ok(
+                ApiResponse.success(AppConstants.Messages.ACCOUNT_DELETED)
+        );
+    }
+
+    @Operation(summary = "Report suspicious activity")
+    @PostMapping(value = "/report-activity", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<String>> reportSuspiciousActivity(
+            @RequestHeader(AppConstants.AUTHORIZATION_HEADER) String authHeader,
+            @RequestBody Map<String, String> request) {
+        String token = TokenUtil.extractToken(authHeader);
+        User user = authService.validateTokenAndGetUser(token);
+        
+        String description = request.get("description");
+        String relatedUser = request.get("relatedUser");
+        
+        userService.reportSuspiciousActivity(user.getId(), description, relatedUser);
+        return ResponseEntity.ok(
+                ApiResponse.success(AppConstants.Messages.REPORT_SUBMITTED)
+        );
     }
 }

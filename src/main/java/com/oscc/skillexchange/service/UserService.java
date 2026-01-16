@@ -149,4 +149,35 @@ public class UserService {
                 .sorted()
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Delete user account permanently
+     */
+    @Transactional
+    public void deleteUserAccount(String userId) {
+        log.info("Deleting user account: {}", userId);
+
+        User user = getUserById(userId);
+        userRepository.delete(user);
+
+        log.info("User account deleted successfully: {}", userId);
+    }
+
+    /**
+     * Report suspicious activity
+     */
+    @Transactional
+    public void reportSuspiciousActivity(String userId, String description, String relatedUser) {
+        log.info("Recording suspicious activity report from user: {} - Related user: {}", userId, relatedUser);
+
+        User user = getUserById(userId);
+        
+        // Log the report for admin review
+        // In a real scenario, you would save this to a database collection/table
+        log.warn("SUSPICIOUS ACTIVITY REPORT - Reporter: {}, Related User: {}, Description: {}", 
+                user.getEmail(), relatedUser, description);
+
+        // You can also store in a separate ActivityReport entity if needed
+        // This is a simple logging approach for now
+    }
 }

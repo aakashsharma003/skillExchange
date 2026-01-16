@@ -24,6 +24,8 @@ public final class AppConstants {
         public static final String REQUEST_CREATED = "Request created successfully";
         public static final String REQUEST_UPDATED = "Request updated successfully";
         public static final String DUPLICATE_REQUEST = "Request already exists for this skill";
+        public static final String ACCOUNT_DELETED = "Account deleted successfully";
+        public static final String REPORT_SUBMITTED = "Report submitted successfully";
 
         private Messages() {}
     }

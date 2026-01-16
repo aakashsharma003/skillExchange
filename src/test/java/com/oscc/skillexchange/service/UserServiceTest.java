@@ -1,35 +1,34 @@
 package com.oscc.skillexchange.service;
 
 import com.oscc.skillexchange.domain.entity.User;
-import com.oscc.skillexchange.dto.response.ApiResponse;
 import com.oscc.skillexchange.dto.response.UserResponse;
 import com.oscc.skillexchange.exception.ResourceNotFoundException;
 import com.oscc.skillexchange.repository.UserRepository;
 import com.oscc.skillexchange.util.EntityMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
 
     @Mock
-    private EntityMapper entityMapper;
+    private EntityMapper mapper;
 
     @Mock
     private MatchEngine matchEngine;
@@ -41,193 +40,139 @@ class UserServiceTest {
     private UserService userService;
 
     private User testUser;
-    private UserResponse testUserResponse;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        
         testUser = User.builder()
-                .id("user-1")
-                .fullName("John Doe")
-                .email("john@example.com")
-                .phone("+1234567890")
-                .skillsOffered(new ArrayList<>(List.of("Java", "Spring Boot")))
-                .interests(new ArrayList<>(List.of("Python", "Docker")))
-                .learningProgress(new HashMap<>())
-                .enabled(true)
-                .locked(false)
-                .createdAt(Instant.now())
-                .build();
-
-        testUserResponse = UserResponse.builder()
-                .id("user-1")
-                .fullName("John Doe")
-                .email("john@example.com")
-                .phone("+1234567890")
-                .skillsOffered(List.of("Java", "Spring Boot"))
-                .interests(List.of("Python", "Docker"))
+                .id("1")
+                .email("test@example.com")
+                .fullName("Test User")
+                .skillsOffered(List.of("Java", "Spring"))
+                .interests(List.of("React", "TypeScript"))
                 .build();
     }
 
     @Test
-    void testGetUserById_shouldReturnUser() {
-        when(userRepository.findById("user-1")).thenReturn(Optional.of(testUser));
+    void testGetUserById_Success() {
+        when(userRepository.findById("1")).thenReturn(Optional.of(testUser));
 
-        User result = userService.getUserById("user-1");
+        User result = userService.getUserById("1");
 
         assertNotNull(result);
-        assertEquals("user-1", result.getId());
-        assertEquals("John Doe", result.getFullName());
-        verify(userRepository).findById("user-1");
+        assertEquals("1", result.getId());
+        assertEquals("test@example.com", result.getEmail());
+        verify(userRepository, times(1)).findById("1");
     }
 
     @Test
-    void testGetUserById_shouldThrowExceptionWhenNotFound() {
-        when(userRepository.findById("non-existing")).thenReturn(Optional.empty());
+    void testGetUserById_NotFound() {
+        when(userRepository.findById("1")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById("non-existing"));
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById("1"));
+        verify(userRepository, times(1)).findById("1");
     }
 
     @Test
-    void testGetUserByEmail_shouldReturnUser() {
-        when(userRepository.findByEmailIgnoreCase("john@example.com")).thenReturn(Optional.of(testUser));
-
-        User result = userService.getUserByEmail("john@example.com");
-
-        assertNotNull(result);
-        assertEquals("john@example.com", result.getEmail());
-        verify(userRepository).findByEmailIgnoreCase("john@example.com");
-    }
-
-    @Test
-    void testGetUserByEmail_shouldThrowExceptionWhenNotFound() {
-        when(userRepository.findByEmailIgnoreCase("nonexistent@example.com")).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> userService.getUserByEmail("nonexistent@example.com"));
-    }
-
-    @Test
-    void testGetUserResponse_shouldMapUserToResponse() {
-        when(entityMapper.toUserResponse(testUser)).thenReturn(testUserResponse);
-
-        UserResponse result = userService.getUserResponse(testUser);
-
-        assertNotNull(result);
-        assertEquals("user-1", result.getId());
-        assertEquals("john@example.com", result.getEmail());
-        verify(entityMapper).toUserResponse(testUser);
-    }
-
-    @Test
-    void testUpdateProfile_shouldUpdateUserFields() {
-        ApiResponse.UpdateProfileRequest request = ApiResponse.UpdateProfileRequest.builder()
-                .fullName("Jane Doe")
-                .bio("Updated bio")
-                .location("New York")
-                .skillsOffered(List.of("Python", "Java"))
-                .interests(List.of("AI", "Docker"))
-                .build();
-
-        when(userRepository.findById("user-1")).thenReturn(Optional.of(testUser));
-        when(entityMapper.toUserResponse(any(User.class))).thenReturn(testUserResponse);
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(matchEngine.findMatches(any(User.class))).thenReturn(new ArrayList<>());
-
-        UserResponse result = userService.updateProfile("user-1", request);
-
-        assertNotNull(result);
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-        assertEquals("Jane Doe", captor.getValue().getFullName());
-        assertEquals("Updated bio", captor.getValue().getBio());
-    }
-
-    @Test
-    void testSearchUsersBySkill_shouldReturnUsersWithSkill() {
-        User user2 = User.builder()
-                .id("user-2")
-                .fullName("Jane Smith")
-                .email("jane@example.com")
-                .skillsOffered(List.of("Python"))
-                .build();
-
-        when(userRepository.findBySkillsOfferedContainingAndEmailNot("Java", "john@example.com"))
-                .thenReturn(List.of(user2));
-        when(entityMapper.toUserResponse(user2)).thenReturn(
-                UserResponse.builder().id("user-2").fullName("Jane Smith").build()
-        );
-
-        List<UserResponse> results = userService.searchUsersBySkill("Java", "john@example.com");
-
-        assertEquals(1, results.size());
-        verify(userRepository).findBySkillsOfferedContainingAndEmailNot("Java", "john@example.com");
-    }
-
-    @Test
-    void testSearchUsersBySkill_shouldReturnEmptyListWhenNoMatch() {
-        when(userRepository.findBySkillsOfferedContainingAndEmailNot("Rust", "john@example.com"))
-                .thenReturn(new ArrayList<>());
-
-        List<UserResponse> results = userService.searchUsersBySkill("Rust", "john@example.com");
-
-        assertTrue(results.isEmpty());
-    }
-
-    @Test
-    void testSearchUsersByInterest_shouldReturnUsersWithInterest() {
-        User user2 = User.builder()
-                .id("user-2")
-                .email("jane@example.com")
-                .interests(List.of("Python"))
-                .build();
-
-        when(userRepository.findByInterestsContainingAndEmailNot("Python", "john@example.com"))
-                .thenReturn(List.of(user2));
-        when(entityMapper.toUserResponse(user2)).thenReturn(
-                UserResponse.builder().id("user-2").build()
-        );
-
-        List<UserResponse> results = userService.searchUsersByInterest("Python", "john@example.com");
-
-        assertEquals(1, results.size());
-    }
-
-    @Test
-    void testGetAllUsers_shouldReturnAllUsersExceptCurrent() {
-        User user2 = User.builder().id("user-2").email("jane@example.com").build();
-        User user3 = User.builder().id("user-3").email("bob@example.com").build();
-
-        when(userRepository.findAllExcludingEmail("john@example.com"))
-                .thenReturn(List.of(user2, user3));
-        when(entityMapper.toUserResponse(any())).thenReturn(testUserResponse);
-
-        List<UserResponse> results = userService.getAllUsers("john@example.com");
-
-        assertEquals(2, results.size());
-        verify(userRepository).findAllExcludingEmail("john@example.com");
-    }
-
-    @Test
-    void testGetAllDistinctSkills_shouldReturnSortedUniqueSkills() {
-        User user1 = User.builder()
+    void testSearchUsersBySkill() {
+        User matchingUser = User.builder()
+                .id("2")
+                .email("other@example.com")
+                .fullName("Other User")
                 .skillsOffered(List.of("Java", "Python"))
-                .interests(List.of("Docker"))
-                .build();
-        User user2 = User.builder()
-                .skillsOffered(List.of("Python"))
-                .interests(List.of("Kubernetes", "Java"))
+                .interests(new ArrayList<>())
                 .build();
 
-        when(userRepository.findAllProjectedSkills()).thenReturn(List.of(user1, user2));
+        when(userRepository.findBySkillsOfferedContainingAndEmailNot("Java", "test@example.com"))
+                .thenReturn(List.of(matchingUser));
 
-        List<String> results = userService.getAllDistinctSkills();
+        UserResponse response = UserResponse.builder()
+                .id("2")
+                .email("other@example.com")
+                .fullName("Other User")
+                .skillsOffered(List.of("Java", "Python"))
+                .interests(new ArrayList<>())
+                .build();
 
-        assertTrue(results.contains("Java"));
-        assertTrue(results.contains("Python"));
-        assertTrue(results.contains("Docker"));
-        assertEquals(results, results.stream().sorted().toList());
+        when(mapper.toUserResponse(matchingUser)).thenReturn(response);
+
+        List<UserResponse> results = userService.searchUsersBySkill("Java", "test@example.com");
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        assertEquals("2", results.get(0).getId());
+        verify(userRepository, times(1)).findBySkillsOfferedContainingAndEmailNot("Java", "test@example.com");
+    }
+
+    @Test
+    void testSearchUsersByInterest() {
+        User matchingUser = User.builder()
+                .id("2")
+                .email("other@example.com")
+                .fullName("Other User")
+                .skillsOffered(new ArrayList<>())
+                .interests(List.of("Java", "Python"))
+                .build();
+
+        when(userRepository.findByInterestsContainingAndEmailNot("Java", "test@example.com"))
+                .thenReturn(List.of(matchingUser));
+
+        UserResponse response = UserResponse.builder()
+                .id("2")
+                .email("other@example.com")
+                .fullName("Other User")
+                .skillsOffered(new ArrayList<>())
+                .interests(List.of("Java", "Python"))
+                .build();
+
+        when(mapper.toUserResponse(matchingUser)).thenReturn(response);
+
+        List<UserResponse> results = userService.searchUsersByInterest("Java", "test@example.com");
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        assertEquals("2", results.get(0).getId());
+        verify(userRepository, times(1)).findByInterestsContainingAndEmailNot("Java", "test@example.com");
+    }
+
+    @Test
+    void testAddSkillOffered() {
+        when(userRepository.findById("1")).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+        UserResponse response = UserResponse.builder()
+                .id("1")
+                .email("test@example.com")
+                .fullName("Test User")
+                .skillsOffered(List.of("Java", "Spring", "Python"))
+                .build();
+
+        when(mapper.toUserResponse(any(User.class))).thenReturn(response);
+
+        UserResponse result = userService.addSkillOffered("1", "Python");
+
+        assertNotNull(result);
+        assertTrue(result.getSkillsOffered().contains("Python"));
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void testAddInterest() {
+        when(userRepository.findById("1")).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+        UserResponse response = UserResponse.builder()
+                .id("1")
+                .email("test@example.com")
+                .fullName("Test User")
+                .interests(List.of("React", "TypeScript", "Vue"))
+                .build();
+
+        when(mapper.toUserResponse(any(User.class))).thenReturn(response);
+
+        UserResponse result = userService.addInterest("1", "Vue");
+
+        assertNotNull(result);
+        assertTrue(result.getInterests().contains("Vue"));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 }
-
-

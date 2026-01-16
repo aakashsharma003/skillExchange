@@ -110,6 +110,7 @@ public class EntityMapper {
 
         return ChatRoomResponse.builder()
                 .id(room.getId())
+                .chatRoomId(room.getId()) // Set both id and chatRoomId for frontend compatibility
                 .otherUser(toUserResponse(otherUser))
                 .exchangeRequestId(room.getExchangeRequestId())
                 .lastActivityAt(room.getLastActivityAt())
