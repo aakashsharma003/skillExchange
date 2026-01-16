@@ -84,8 +84,6 @@ public class ChatService {
                     }
                     
                     ChatRoomResponse resp = mapper.toChatRoomResponse(room, otherUser);
-                    // Provide frontend-friendly fields
-                    resp.setChatRoomId(room.getId());
 
                     if (room.getExchangeRequestId() != null) {
                         exchangeRequestRepository.findById(room.getExchangeRequestId()).ifPresent(req -> {

@@ -19,12 +19,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // WebSocketConfig.java
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Change "/ws" to "/ws-chat"
+        // Chat WebSocket endpoint
         registry.addEndpoint("/api/ws-chat")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
 
         registry.addEndpoint("/api/ws-chat")
+                .setAllowedOriginPatterns("*");
+
+        // Notifications WebSocket endpoint
+        registry.addEndpoint("/api/ws-notifications")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+
+        registry.addEndpoint("/api/ws-notifications")
                 .setAllowedOriginPatterns("*");
     }
 

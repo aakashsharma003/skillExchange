@@ -122,7 +122,6 @@ public class ChatController {
 
         // 4. FIX: Entity ko Response DTO mein convert karein using mapper
         ChatRoomResponse response = mapper.toChatRoomResponse(roomEntity, otherUser);
-        response.setChatRoomId(roomEntity.getId());
         if (roomEntity.getExchangeRequestId() != null) {
             exchangeRequestRepository.findById(roomEntity.getExchangeRequestId()).ifPresent(req -> {
                 response.setOfferedSkill(req.getOfferedSkill());
