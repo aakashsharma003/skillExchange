@@ -27,16 +27,42 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.send") // Matches the frontend destination
     public void sendMessage(@Payload ChatMessage message) {
         try {
+            log.info("Received WebSocket message: roomId={}, senderId={}, receiverId={}, content={}", 
+                    message.getChatRoomId(), message.getSenderId(), message.getReceiverId(), 
+                    message.getContent() != null ? message.getContent().substring(0, Math.min(50, message.getContent().length())) : "null");
+            
+            // Validate required fields
+            if (message.getChatRoomId() == null || message.getChatRoomId().isBlank()) {
+                log.error("Chat room ID is missing in message");
+                return;
+            }
+            
+            if (message.getSenderId() == null || message.getSenderId().isBlank()) {
+                log.error("Sender ID is missing in message");
+                return;
+            }
+            
+            if (message.getContent() == null || message.getContent().isBlank()) {
+                log.error("Message content is missing");
+                return;
+            }
+
             ChatMessageResponse response = chatService.saveMessage(message);
+            log.info("Message saved successfully: messageId={}, roomId={}", response.getId(), response.getChatRoomId());
 
             // 1. Send to the specific room (Matches ChatRoom.tsx subscription)
             messagingTemplate.convertAndSend("/topic/room/" + message.getChatRoomId(), response);
+            log.debug("Message sent to room topic: /topic/room/{}", message.getChatRoomId());
 
             // 2. Send to the personal user topic (Matches Sidebar/Chat.tsx subscription)
-            messagingTemplate.convertAndSend("/topic/user/" + message.getReceiverId(), response);
+            if (message.getReceiverId() != null && !message.getReceiverId().isBlank()) {
+                messagingTemplate.convertAndSend("/topic/user/" + message.getReceiverId(), response);
+                log.debug("Message sent to user topic: /topic/user/{}", message.getReceiverId());
+            }
 
         } catch (Exception e) {
-            log.error("WebSocket error", e);
+            log.error("WebSocket error while processing message: roomId={}, senderId={}", 
+                    message.getChatRoomId(), message.getSenderId(), e);
         }
     }
 

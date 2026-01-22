@@ -119,12 +119,29 @@ public class ChatService {
             throw new IllegalArgumentException("Sender ID is required");
         }
 
+        // Set senderEmail from User if not already set
+        if (message.getSenderEmail() == null || message.getSenderEmail().isBlank()) {
+            try {
+                User sender = userService.getUserById(message.getSenderId());
+                message.setSenderEmail(sender.getEmail());
+                log.debug("Set senderEmail from user: {}", sender.getEmail());
+            } catch (Exception e) {
+                log.warn("Could not fetch sender email for userId: {}", message.getSenderId(), e);
+            }
+        }
+
         // Ensure receiverId is set
         if (message.getReceiverId() == null || message.getReceiverId().isBlank()) {
             // Set receiver based on the chat room participants
             message.setReceiverId(
                     message.getSenderId().equals(room.getSenderId()) ? room.getReceiverId() : room.getSenderId()
             );
+            log.debug("Set receiverId from chat room: {}", message.getReceiverId());
+        }
+
+        // Validate content is not empty
+        if (message.getContent() == null || message.getContent().isBlank()) {
+            throw new IllegalArgumentException("Message content is required");
         }
 
         // Save message

@@ -1,7 +1,7 @@
 spring:
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
+      api-key: ${OPENAI_API_KEY:sk-test-default-key}
       chat:
         options:
           model: gpt-4o
@@ -10,14 +10,14 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGODB_URI}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/skillexchange}
       auto-index-creation: true
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:test@gmail.com}
+    password: ${MAIL_PASSWORD:test-password}
     properties:
       mail:
         smtp:
@@ -39,7 +39,7 @@ server:
 
 app:
   jwt:
-    secret-base64: ${JWT_SECRET}
+    secret-base64: ${JWT_SECRET:my-secret-key-base64-encoded-minimum-32-chars-long-for-jwt-signing}
     ttl-minutes: ${JWT_TTL_MINUTES:60}
     clock-skew-seconds: 60
   otp:
